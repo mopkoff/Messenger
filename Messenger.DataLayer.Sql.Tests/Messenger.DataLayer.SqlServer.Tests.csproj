@@ -7,8 +7,8 @@
     <ProjectGuid>{8EF63BD6-6626-43AD-B4C9-13409FF2AAC7}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Messenger.DataLayer.Sql.Tests</RootNamespace>
-    <AssemblyName>Messenger.DataLayer.Sql.Tests</AssemblyName>
+    <RootNamespace>DataLayer.Sql.Tests</RootNamespace>
+    <AssemblyName>DataLayer.Sql.Tests</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -52,21 +52,21 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\DataLayer.SqlServer\DataLayer.SqlServer.csproj">
+    <ProjectReference Include="..\DataLayer.SqlServer\Messenger.DataLayer.SqlServer.csproj">
       <Project>{3b76e34a-921c-45de-ac8e-26a7be5bf7ff}</Project>
-      <Name>DataLayer.SqlServer</Name>
+      <Name>Messenger.DataLayer.SqlServer</Name>
     </ProjectReference>
-    <ProjectReference Include="..\DataLayer\DataLayer.csproj">
+    <ProjectReference Include="..\DataLayer\Messenger.DataLayer.csproj">
       <Project>{7CDE6F14-9F87-422D-BA6B-3CDF2700F64F}</Project>
-      <Name>DataLayer</Name>
+      <Name>Messenger.DataLayer</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Model.Enums\Model.Enums.csproj">
+    <ProjectReference Include="..\Model.Enums\Messenger.Model.Enums.csproj">
       <Project>{c7f4ce79-bd1a-4e74-b70c-a683780ee760}</Project>
-      <Name>Model.Enums</Name>
+      <Name>Messenger.Model.Enums</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Model\Model.csproj">
+    <ProjectReference Include="..\Model\Messenger.Model.csproj">
       <Project>{b8a9c43f-0703-4c5e-bafa-538848da31a9}</Project>
-      <Name>Model</Name>
+      <Name>Messenger.Model</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
