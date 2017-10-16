@@ -60,8 +60,10 @@ namespace Messenger.DataLayer.Sql.Tests
             _tempUsers.Add(result.Id);
 
             var chatRepository = new ChatsRepository(ConnectionString, usersRepository);
-            var chat = chatRepository.CreateGroupChat(new[] { user.Id }, chatName);
+            var chat = chatRepository.CreateGroupChat( new int[] { _tempUsers[0]     }, chatName);
             var userChats = chatRepository.GetUserChats(user.Id);
+            if (userChats == null)
+                Clean();
             //asserts
             Assert.AreEqual(chatName, chat.Name);
             Assert.AreEqual(user.Id, chat.Members.Single().Id);

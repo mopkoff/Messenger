@@ -50,15 +50,15 @@
     <WCFMetadata Include="Connected Services\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\DataLayer\Messenger.DataLayer.csproj">
+    <ProjectReference Include="..\Messenger.DataLayer\Messenger.DataLayer.csproj">
       <Project>{7cde6f14-9f87-422d-ba6b-3cdf2700f64f}</Project>
       <Name>Messenger.DataLayer</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Model.Enums\Messenger.Model.Enums.csproj">
+    <ProjectReference Include="..\Messenger.Model.Enums\Messenger.Model.Enums.csproj">
       <Project>{c7f4ce79-bd1a-4e74-b70c-a683780ee760}</Project>
       <Name>Messenger.Model.Enums</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Model\Messenger.Model.csproj">
+    <ProjectReference Include="..\Messenger.Model\Messenger.Model.csproj">
       <Project>{b8a9c43f-0703-4c5e-bafa-538848da31a9}</Project>
       <Name>Messenger.Model</Name>
     </ProjectReference>

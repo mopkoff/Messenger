@@ -37,6 +37,7 @@ namespace Messenger.DataLayer
         /// <param name="userId"></param>
         /// <returns></returns>
         IEnumerable<Chat> GetUserChats(int userId);
+
         void DeleteChat(int chatId);
 
         void SetCreator(int chatId, int newCreatorUserId);

@@ -46,11 +46,11 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Model.Enums\Messenger.Model.Enums.csproj">
+    <ProjectReference Include="..\Messenger.Model.Enums\Messenger.Model.Enums.csproj">
       <Project>{c7f4ce79-bd1a-4e74-b70c-a683780ee760}</Project>
       <Name>Messenger.Model.Enums</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Model\Messenger.Model.csproj">
+    <ProjectReference Include="..\Messenger.Model\Messenger.Model.csproj">
       <Project>{b8a9c43f-0703-4c5e-bafa-538848da31a9}</Project>
       <Name>Messenger.Model</Name>
     </ProjectReference>

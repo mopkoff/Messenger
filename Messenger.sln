@@ -3,15 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26730.15
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Messenger.DataLayer.SqlServer", "DataLayer.SqlServer\Messenger.DataLayer.SqlServer.csproj", "{3B76E34A-921C-45DE-AC8E-26A7BE5BF7FF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Messenger.DataLayer.SqlServer", "Messenger.DataLayer.SqlServer\Messenger.DataLayer.SqlServer.csproj", "{3B76E34A-921C-45DE-AC8E-26A7BE5BF7FF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Messenger.Model", "Model\Messenger.Model.csproj", "{B8A9C43F-0703-4C5E-BAFA-538848DA31A9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Messenger.Model", "Messenger.Model\Messenger.Model.csproj", "{B8A9C43F-0703-4C5E-BAFA-538848DA31A9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Messenger.Model.Enums", "Model.Enums\Messenger.Model.Enums.csproj", "{C7F4CE79-BD1A-4E74-B70C-A683780EE760}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Messenger.Model.Enums", "Messenger.Model.Enums\Messenger.Model.Enums.csproj", "{C7F4CE79-BD1A-4E74-B70C-A683780EE760}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Messenger.DataLayer.SqlServer.Tests", "Messenger.DataLayer.Sql.Tests\Messenger.DataLayer.SqlServer.Tests.csproj", "{8EF63BD6-6626-43AD-B4C9-13409FF2AAC7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Messenger.DataLayer", "DataLayer\Messenger.DataLayer.csproj", "{7CDE6F14-9F87-422D-BA6B-3CDF2700F64F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Messenger.DataLayer", "Messenger.DataLayer\Messenger.DataLayer.csproj", "{7CDE6F14-9F87-422D-BA6B-3CDF2700F64F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -52,7 +52,7 @@
     <Content Include="defaultAvatar.bmp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Model.Enums\Messenger.Model.Enums.csproj">
+    <ProjectReference Include="..\Messenger.Model.Enums\Messenger.Model.Enums.csproj">
       <Project>{C7F4CE79-BD1A-4E74-B70C-A683780EE760}</Project>
       <Name>Messenger.Model.Enums</Name>
     </ProjectReference>

@@ -117,7 +117,7 @@ namespace Messenger.DataLayer.SqlServer
             }
         }
 
-        private Chat CreateChat(IEnumerable<int> members, string title, ChatTypes chatType)
+        private Chat CreateChat(IEnumerable<int> members, string chatName, ChatTypes chatType)
         {
             if (members == null)
                 return null;
@@ -136,20 +136,22 @@ namespace Messenger.DataLayer.SqlServer
                         
                         var userIds = members as int[] ?? membersList.ToArray();
 
-                        var chat = new Chat
+                        var chat = new Chat()
                         {
                             ChatType = chatType,
                             CreatorId = userIds[0],
+                            Name = chatName
                         };
 
                         // Create new chat
                         using (var command = connection.CreateCommand())
                         {
                             command.CommandText =
-                                "INSERT INTO [Chats] ([ChatType], [CreatorID]) OUTPUT INSERTED.[ID] VALUES (@chatType, @creatorId)";
+                                "INSERT INTO [Chats] ([ChatType], [CreatorID], [Name]) OUTPUT INSERTED.[ID] VALUES (@chatType, @creatorId, @chatName)";
 
                             command.Parameters.AddWithValue("@chatType", (int)(chat.ChatType));
                             command.Parameters.AddWithValue("@creatorId", chat.CreatorId);
+                            command.Parameters.AddWithValue("@chatName", chat.Name);
 
                             chat.Id = (int)command.ExecuteScalar();
                         }
@@ -160,25 +162,13 @@ namespace Messenger.DataLayer.SqlServer
                             using (var command = connection.CreateCommand())
                             {
                                 command.CommandText =
-                                    "INSERT INTO [ChatUsers] ([UserID], [ChatID]) VALUES (@userId, @chatId)";
+                                    "INSERT INTO [ChatsUsers] ([UserID], [ChatID]) VALUES (@userId, @chatId)";
 
                                 command.Parameters.AddWithValue("@userId", userId);
                                 command.Parameters.AddWithValue("@chatId", chat.Id);
 
                                 command.ExecuteNonQuery();
                             }
-                        }
-
-                        // Add chat title
-                        using (var command = connection.CreateCommand())
-                        {
-                            command.CommandText =
-                                "INSERT INTO [ChatInfos] ([ChatID], [Title], [Avatar]) VALUES (@chatId, @title, NULL)";
-
-                            command.Parameters.AddWithValue("@chatId", chat.Id);
-                            command.Parameters.AddWithValue("@title", chat.Name);
-
-                            command.ExecuteNonQuery();
                         }
 
                         scope.Complete();
@@ -200,6 +190,10 @@ namespace Messenger.DataLayer.SqlServer
 
         public Chat CreateDialog(int member1, int member2)
         {
+            UsersRepository u = new UsersRepository(_connectionString);
+            // string name1 = u.GetUser(member1).Login;
+            //string name2 = u.GetUser(member2).Login;
+            //return CreateChat(new[] { member1, member2 }, "Чат " + name1 + " и " + name2 , ChatTypes.Dialog);
             return CreateChat(new[] { member1, member2 }, string.Empty, ChatTypes.Dialog);
         }
 
@@ -223,9 +217,10 @@ namespace Messenger.DataLayer.SqlServer
 
         }
 
-
         public IEnumerable<Chat> GetUserChats(int userId)
         {
+            if (userId == 0)
+                yield break;
             using (var connection = new SqlConnection(_connectionString))
             {
                 connection.Open();
@@ -234,8 +229,8 @@ namespace Messenger.DataLayer.SqlServer
                 using (var command = connection.CreateCommand())
                 {
                     command.CommandText =
-                        "SELECT [Chats].[ID] ID, [Chats].[ChatType] ChatType, [Chats].[CreatorID] CreatorID " +
-                        "FROM [ChatUsers], [Chats] WHERE [Chats].[ID] = [ChatUsers].[ChatID] AND [ChatUsers].[UserID] = @userId";
+                        "SELECT [Chats].[ID] ID, [Chats].[ChatType] ChatType, [Chats].[CreatorID] CreatorID, [Chats].[Name] Name " +
+                        "FROM [ChatsUsers], [Chats] WHERE [Chats].[ID] = [ChatsUsers].[ChatID] AND [ChatsUsers].[UserID] = @userId";
 
                     command.Parameters.AddWithValue("@userId", userId);
                     using (var reader = command.ExecuteReader())
@@ -244,20 +239,18 @@ namespace Messenger.DataLayer.SqlServer
                             yield break;
                         while (reader.Read())
                         {
-                            var chatId = reader.GetInt32(reader.GetOrdinal("ID"));
                             yield return new Chat
                             {
                                 Id = reader.GetInt32(reader.GetOrdinal("ID")),
+                                Name = reader.GetString(reader.GetOrdinal("Name")),
                                 ChatType = (ChatTypes)reader.GetInt32(reader.GetOrdinal("ChatType")),
-                                CreatorId = reader.GetInt32(reader.GetOrdinal("CreatorID")),                                
-                                Members = GetChatUsers(chatId)
+                                CreatorId = reader.GetInt32(reader.GetOrdinal("CreatorID")),
                             };
                         }
                     }
                 }
             }
         }
-
         public IEnumerable<User> GetChatUsers(int chatId)
         {
             using (var connection = new SqlConnection(_connectionString))

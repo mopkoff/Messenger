@@ -24,17 +24,12 @@ namespace Messenger.DataLayer.SqlServer
 
         public User CreateUser(User user)
         {
-            string login = user.Login;
-            string password = user.Password;
-            if (string.IsNullOrEmpty(login) || string.IsNullOrEmpty(password))
-                return null;
-
             using (var connection = new SqlConnection(_connectionString))
             {
                 connection.Open();
 
-                if (SqlHelper.DoesFieldValueExist(connection, "Users", "Login", login, SqlDbType.VarChar, login.Length))
-                    return null;
+                if (SqlHelper.DoesFieldValueExist(connection, "Users", "Login", user.Login, SqlDbType.VarChar, user.Login.Length))
+                    throw new Exception("Login already in use");
                 using (var transaction = connection.BeginTransaction())
                 {
                     using (var command = connection.CreateCommand())
@@ -43,8 +38,10 @@ namespace Messenger.DataLayer.SqlServer
                         command.CommandText =
                             "INSERT INTO [Users] ([Login], [Password]) OUTPUT INSERTED.[ID] VALUES (@login, @password)";
 
-                        command.Parameters.AddWithValue("@login", login);
-                        command.Parameters.AddWithValue("@password", password);                        
+                        command.Parameters.AddWithValue("@login", user.Login);
+                        command.Parameters.AddWithValue("@password", user.Password);
+
+                        user.Id = (int)command.ExecuteScalar();
                     }
                     /*
                     using (var command = connection.CreateCommand())
@@ -98,7 +95,7 @@ namespace Messenger.DataLayer.SqlServer
                     return null;
                 using (var command = connection.CreateCommand())
                 {
-                    command.CommandText = "SELECT [ID], [Username], [Password] FROM [Users] WHERE [ID] = @userId";
+                    command.CommandText = "SELECT [ID], [Login], [Password] FROM [Users] WHERE [ID] = @userId";
                     command.Parameters.AddWithValue("@userId", userId);
 
                     var user = new User();
@@ -106,8 +103,8 @@ namespace Messenger.DataLayer.SqlServer
                     {
                         reader.Read();
                         user.Id = reader.GetInt32(reader.GetOrdinal("ID"));
+                        user.Login = reader.GetString(reader.GetOrdinal("Login"));
                         user.Password = reader.GetString(reader.GetOrdinal("Password"));
-                        user.Login = reader.GetString(reader.GetOrdinal("Username"));
                     }
                     return user;
                 }
