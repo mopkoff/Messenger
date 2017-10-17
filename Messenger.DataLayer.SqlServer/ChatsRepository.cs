@@ -72,18 +72,25 @@ namespace Messenger.DataLayer.SqlServer
                     if (SqlHelper.DoesDoubleKeyExist(connection, "Chats", "[ID]", chatId, "[ChatType]",
                         (int)ChatTypes.Dialog))
                         return;
-                    using (var command = connection.CreateCommand())
+                    using (var transaction = connection.BeginTransaction())
                     {
-                        command.CommandType = CommandType.StoredProcedure;
-                        command.CommandText = "AddUsersToChat";
+                        foreach (var userId in idList)
+                        {
+                            using (var command = connection.CreateCommand())
+                            {
+                                command.Transaction = transaction;
+                                command.CommandText = "INSERT INTO [ChatsUsers]([UserID], [ChatID]) VALUES " +
+                                                                             "(@userId, @chatId)";
+                                command.Parameters.AddWithValue("@userId", userId);
+                                command.Parameters.AddWithValue("@chatId", chatId);
 
-                        var parameter =
-                            command.Parameters.AddWithValue("@IDList", SqlHelper.IdListToDataTable(idList));
-                        parameter.SqlDbType = SqlDbType.Structured;
-                        parameter.TypeName = "IdListType";
-                        command.Parameters.AddWithValue("@ChatID", chatId);
-                        command.ExecuteNonQuery();
+                                command.ExecuteNonQuery();
+                            }
+                        }
+
+                        transaction.Commit();
                     }
+                    
                 }
             }
             catch (SqlException) { }
@@ -111,7 +118,8 @@ namespace Messenger.DataLayer.SqlServer
                             Id = chatId,
                             ChatType = (ChatTypes)reader.GetInt32(reader.GetOrdinal("ChatType")),
                             CreatorId = reader.GetInt32(reader.GetOrdinal("CreatorID")),
-                        };
+                            Members = GetChatUsers(chatId)
+                    };
                     }
                 }
             }
@@ -259,7 +267,7 @@ namespace Messenger.DataLayer.SqlServer
 
                 using (var command = connection.CreateCommand())
                 {
-                    command.CommandText = "SELECT [UserID] FROM [ChatUsers] WHERE [ChatUsers].[ChatID] = @chatId";
+                    command.CommandText = "SELECT [UserID] FROM [ChatsUsers] WHERE [ChatsUsers].[ChatID] = @chatId";
 
                     command.Parameters.AddWithValue("@chatId", chatId);
                     using (var reader = command.ExecuteReader())
@@ -292,7 +300,7 @@ namespace Messenger.DataLayer.SqlServer
                 using (var command = connection.CreateCommand())
                 {
                     command.CommandText =
-                        "DELETE FROM [ChatUsers] WHERE [ChatUsers].[ChatID] = @chatId AND [ChatUsers].[UserID] = @userId";
+                        "DELETE FROM [ChatsUsers] WHERE [ChatsUsers].[ChatID] = @chatId AND [ChatsUsers].[UserID] = @userId";
 
                     command.Parameters.AddWithValue("@chatId", chatId);
                     command.Parameters.AddWithValue("@userId", userId);
@@ -319,21 +327,28 @@ namespace Messenger.DataLayer.SqlServer
                 // check if chat is dialog
                 if (SqlHelper.DoesDoubleKeyExist(connection, "Chats", "ID", chatId, "ChatType", (int)ChatTypes.Dialog))
                     return;
-                using (var command = connection.CreateCommand())
+                using (var transaction = connection.BeginTransaction())
                 {
-                    command.CommandType = CommandType.StoredProcedure;
-                    command.CommandText = "KickUsersFromChat";
+                    foreach (var userId in idList)
+                    {
+                        using (var command = connection.CreateCommand())
+                        {
+                            command.Transaction = transaction;
+                            command.CommandText =
+                                "DELETE FROM [ChatsUsers] WHERE [ChatsUsers].[ChatID] = @chatId AND [ChatsUsers].[UserID] = @userId";
 
-                    var parameter = command.Parameters.AddWithValue("@IDList", SqlHelper.IdListToDataTable(idList));
-                    parameter.SqlDbType = SqlDbType.Structured;
-                    parameter.TypeName = "IdListType";
-                    command.Parameters.AddWithValue("@ChatID", chatId);
-                    command.ExecuteNonQuery();
+                            command.Parameters.AddWithValue("@chatId", chatId);
+                            command.Parameters.AddWithValue("@userId", userId);
+
+                            command.ExecuteNonQuery();
+                        }
+                    }
+
+                    transaction.Commit();
                 }
             }
         }
-        
-
+       
         public void SetCreator(int chatId, int newCreator)
         {
             if (newCreator == 0)
@@ -347,7 +362,7 @@ namespace Messenger.DataLayer.SqlServer
                     if (SqlHelper.DoesDoubleKeyExist(connection, "Chats", "ID", chatId, "ChatType", (int)ChatTypes.Dialog))
                         return;
                     // check if user is in chat
-                    if (!SqlHelper.DoesDoubleKeyExist(connection, "ChatUsers", "UserID", newCreator, "ChatID", chatId))
+                    if (!SqlHelper.DoesDoubleKeyExist(connection, "ChatsUsers", "UserID", newCreator, "ChatID", chatId))
                         return;
 
                     using (var command = connection.CreateCommand())

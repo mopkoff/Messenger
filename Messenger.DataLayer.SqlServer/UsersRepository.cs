@@ -43,7 +43,7 @@ namespace Messenger.DataLayer.SqlServer
 
                         user.Id = (int)command.ExecuteScalar();
                     }
-                    /*
+                    
                     using (var command = connection.CreateCommand())
                     {
                         command.Transaction = transaction;
@@ -54,7 +54,7 @@ namespace Messenger.DataLayer.SqlServer
                         command.Parameters.AddWithValue("@userId", user.Id);
 
                         command.ExecuteNonQuery();
-                    }*/
+                    }
                     transaction.Commit();
 
                     return user;
@@ -125,18 +125,18 @@ namespace Messenger.DataLayer.SqlServer
 
                 var idExists = SqlHelper.DoesFieldValueExist(connection, "Users", "ID", user.Id, SqlDbType.Int);
                 // If ID does not exist, but username exists, then we cannot create a new user!
-                if (!idExists && SqlHelper.DoesFieldValueExist(connection, "Users", "Username", user.Login, SqlDbType.VarChar,
+                if (!idExists && SqlHelper.DoesFieldValueExist(connection, "Users", "Login", user.Login, SqlDbType.VarChar,
                         user.Login.Length))
                     return null;
                 using (var command = connection.CreateCommand())
                 {
                     command.CommandText = idExists ?
-                        "UPDATE [Users] SET [Username] = @userName, [Password] = @password WHERE [ID] = @userId"
-                        : "INSERT INTO [Users] ([Username], [Password]) OUTPUT INSERTED.[ID] VALUES (@userName, @password)";
+                        "UPDATE [Users] SET [Login] = @login, [Password] = @password WHERE [ID] = @userId"
+                        : "INSERT INTO [Users] ([Login], [Password]) OUTPUT INSERTED.[ID] VALUES (@login, @password)";
 
                     if (idExists)
                         command.Parameters.AddWithValue("@userId", user.Id);
-                    command.Parameters.AddWithValue("@userName", user.Login);
+                    command.Parameters.AddWithValue("@login", user.Login);
                     command.Parameters.AddWithValue("@password", user.Password);
 
                     if (idExists)
@@ -150,13 +150,13 @@ namespace Messenger.DataLayer.SqlServer
             }
         }
 
-        public void SetPassword(int userId, string newHash)
+        public void SetPassword(int userId, string newPassword)
         {
             if (userId == 0)
                 return;
-            if (string.IsNullOrEmpty(newHash))
+            if (string.IsNullOrEmpty(newPassword))
                 return;
-
+            string newHash = newPassword.GetHashCode().ToString();
             using (var connection = new SqlConnection(_connectionString))
             {
                 connection.Open();
