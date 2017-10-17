@@ -19,6 +19,13 @@ namespace Messenger.DataLayer.Sql.Tests
                 Integrated Security=True;";
 
         private readonly List<int> _tempUsers = new List<int>();
+        private UsersRepository usersRepository;
+
+        [TestInitialize]
+        public void InitRepos()
+        {
+            usersRepository = new UsersRepository(ConnectionString);          
+        }
 
         [TestMethod]
         public void ShouldCreateGetDeleteUser()
@@ -28,7 +35,6 @@ namespace Messenger.DataLayer.Sql.Tests
             var user = new User("testUser", "password");
 
             //act
-            var usersRepository = new UsersRepository(ConnectionString);
             var result1 = usersRepository.CreateUser(user);
             var result2 = usersRepository.GetUser(user.Id);
             usersRepository.DeleteUser(user.Id);
@@ -44,14 +50,32 @@ namespace Messenger.DataLayer.Sql.Tests
         }
 
         [TestMethod]
+        public void ShouldAddUserInfo()
+        {
+            //arrange
+
+            var user = new User("testUser", "password");
+            var userInfo = new UserInfo() { FirstName = "testFirstName", LastName = "testLastName", About = "XD", Gender = Model.Enums.GenderTypes.Male };
+
+            //act
+            user = usersRepository.CreateUser(user);
+            _tempUsers.Add(user.Id);
+            usersRepository.UpdateUserInfo(user, userInfo);
+            user.userInfo = usersRepository.GetUserInfo(user.Id);
+            
+            //asserts
+            Assert.IsTrue(userInfo.Equals(user.userInfo), "Adding userInfo Failed");
+        }
+
+        [TestMethod]
         public void ShouldChangePasswordAndPersist()
         {
             //arrange
             var user = new User("testUser", "password");
 
             //act
-            var usersRepository = new UsersRepository(ConnectionString);
             user = usersRepository.CreateUser(user);
+            _tempUsers.Add(user.Id);
             usersRepository.SetPassword(user.Id, "newPassword");
             var result1 = usersRepository.GetUser(user.Id);
             usersRepository.PersistUser(new User(user.Id, "newName", "superNewPassword"));

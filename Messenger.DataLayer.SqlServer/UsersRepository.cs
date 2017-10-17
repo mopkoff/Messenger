@@ -2,6 +2,8 @@
 using System.Data;
 using System.Data.SqlClient;
 using Messenger.Model;
+using System.Drawing;
+using Messenger.Model.Enums;
 
 namespace Messenger.DataLayer.SqlServer
 {
@@ -43,7 +45,7 @@ namespace Messenger.DataLayer.SqlServer
 
                         user.Id = (int)command.ExecuteScalar();
                     }
-                    
+
                     using (var command = connection.CreateCommand())
                     {
                         command.Transaction = transaction;
@@ -85,6 +87,69 @@ namespace Messenger.DataLayer.SqlServer
             }
         }
 
+        public void UpdateUserInfo(User user, UserInfo userInfo)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                connection.Open();
+
+                if (!SqlHelper.DoesFieldValueExist(connection, "Users", "Login", user.Login, SqlDbType.VarChar, user.Login.Length))
+                    throw new Exception("User not exist");
+
+                using (var command = connection.CreateCommand())
+                {
+                    command.CommandText =
+                        "Update [UserInfo] " +
+                        "Set FirstName = @firstName, Lastname = @lastName , Avatar = @avatar, " +
+                        "About = @about, GenderType = @genderType WHERE [UserID] = @userId";
+
+                    command.Parameters.AddWithValue("@userId", user.Id);
+                    command.Parameters.AddWithValue("@firstName", userInfo.FirstName);
+                    command.Parameters.AddWithValue("@lastName", userInfo.LastName);
+                    command.Parameters.AddWithValue("@about", userInfo.About);
+                    command.Parameters.AddWithValue("@genderType", (int)userInfo.Gender);
+                    var avatar =
+                                new SqlParameter("@avatar", SqlDbType.VarBinary, userInfo.GetAvatarAsByteArray().Length)
+                                { Value = userInfo.GetAvatarAsByteArray() };
+                    command.Parameters.Add(avatar);
+
+                    command.ExecuteNonQuery();
+                }
+            }
+        }
+
+        public UserInfo GetUserInfo(int userId)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                connection.Open();
+
+                if (!SqlHelper.DoesFieldValueExist(connection, "Users", "ID", userId, SqlDbType.Int))
+                    throw new Exception("User not exist");
+                using (var command = connection.CreateCommand())
+                {
+                    command.CommandText = "SELECT [FirstName], [LastName], [Avatar], [About], [GenderType] FROM [UserInfo] WHERE [UserID] = @userId";
+                    command.Parameters.AddWithValue("@userId", userId);
+                    
+                    using (var reader = command.ExecuteReader())
+                    {
+                        if (!reader.HasRows)
+                            return null;
+                        reader.Read();
+                        UserInfo result = new UserInfo
+                        {
+                            FirstName = reader.IsDBNull(reader.GetOrdinal("FirstName")) ? null : reader.GetString(reader.GetOrdinal("FirstName")),
+                            LastName = reader.IsDBNull(reader.GetOrdinal("LastName")) ? null : reader.GetString(reader.GetOrdinal("LastName")),
+                            About = reader.IsDBNull(reader.GetOrdinal("About")) ? null : reader.GetString(reader.GetOrdinal("About")),
+                            Gender = reader.IsDBNull(reader.GetOrdinal("GenderType")) ? 0 : (GenderTypes)reader.GetInt32(reader.GetOrdinal("GenderType"))
+                        };
+                        result.SetAvatarUsingByteArray(reader.IsDBNull(reader.GetOrdinal("Avatar")) ? null : reader[reader.GetOrdinal("Avatar")] as byte[]);
+                        return result;
+                    }
+                }
+            }
+        }
+
         public User GetUser(int userId)
         {
             using (var connection = new SqlConnection(_connectionString))
@@ -92,7 +157,7 @@ namespace Messenger.DataLayer.SqlServer
                 connection.Open();
 
                 if (!SqlHelper.DoesFieldValueExist(connection, "Users", "ID", userId, SqlDbType.Int))
-                    return null;
+                    throw new Exception("User not exist");
                 using (var command = connection.CreateCommand())
                 {
                     command.CommandText = "SELECT [ID], [Login], [Password] FROM [Users] WHERE [ID] = @userId";
@@ -110,7 +175,7 @@ namespace Messenger.DataLayer.SqlServer
                 }
             }
         }
-                      
+
         public User PersistUser(User user)
         {
             if (user == null)
@@ -127,7 +192,7 @@ namespace Messenger.DataLayer.SqlServer
                 // If ID does not exist, but username exists, then we cannot create a new user!
                 if (!idExists && SqlHelper.DoesFieldValueExist(connection, "Users", "Login", user.Login, SqlDbType.VarChar,
                         user.Login.Length))
-                    return null;
+                    throw new Exception("User not exist");
                 using (var command = connection.CreateCommand())
                 {
                     command.CommandText = idExists ?
@@ -162,7 +227,7 @@ namespace Messenger.DataLayer.SqlServer
                 connection.Open();
 
                 if (!SqlHelper.DoesFieldValueExist(connection, "Users", "ID", userId, SqlDbType.Int))
-                    return;
+                    throw new Exception("User not exist");
                 using (var command = connection.CreateCommand())
                 {
                     command.CommandText = "UPDATE [Users] SET [Password] = @password WHERE [ID] = @userId";
