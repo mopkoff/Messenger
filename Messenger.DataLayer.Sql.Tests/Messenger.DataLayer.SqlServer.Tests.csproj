@@ -49,6 +49,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ChatsRepositoryTests.cs" />
+    <Compile Include="MessagesRepositoryTest.cs" />
     <Compile Include="UsersRepositoryTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

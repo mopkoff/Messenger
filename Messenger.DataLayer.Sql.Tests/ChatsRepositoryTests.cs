@@ -21,36 +21,6 @@ namespace Messenger.DataLayer.Sql.Tests
         private readonly List<int> _tempChats = new List<int>();
 
         [TestMethod]
-        public void ShouldStartChatWithUser()
-        {
-            //arrange
-            var user = new User
-            {
-                Login = "testUser",
-                Password = "password"
-            };
-
-            const string chatName = "testChat";
-
-            //act
-            var usersRepository = new UsersRepository(ConnectionString);
-            var result = usersRepository.CreateUser(user);
-
-            _tempUsers.Add(result.Id);
-
-            var chatRepository = new ChatsRepository(ConnectionString, usersRepository);
-            var chat = chatRepository.CreateGroupChat(new int[] { _tempUsers[0] }, chatName);
-            var userChats = chatRepository.GetUserChats(user.Id);
-
-            //asserts
-            Assert.AreEqual(chatName, chat.Name);
-            Assert.AreEqual(user.Id, chat.Members.Single().Id);
-            Assert.AreEqual(chat.Id, userChats.Single().Id);
-            Assert.AreEqual(chat.Name, userChats.Single().Name);
-
-        }
-
-        [TestMethod]
         public void ShouldKickUsers()
         {
             //arrange
@@ -78,11 +48,11 @@ namespace Messenger.DataLayer.Sql.Tests
 
             var Members = chatRepository.GetChatUsers(chat.Id);
             //asserts
-            Assert.AreEqual(true, Members.Contains(users[0], new UserEqualityComparer()));
-            Assert.AreEqual(false, Members.Contains(users[1], new UserEqualityComparer()));
-            Assert.AreEqual(false, Members.Contains(users[2], new UserEqualityComparer()));
-            Assert.AreEqual(false, Members.Contains(users[3], new UserEqualityComparer()));
-            Assert.AreEqual(true, Members.Contains(users[4], new UserEqualityComparer()));
+            Assert.IsTrue(Members.Contains(users[0], new UserEqualityComparer()), "Chat Creator kicked - failed");
+            Assert.IsFalse(Members.Contains(users[1], new UserEqualityComparer()), "Group of users kick failed");
+            Assert.IsFalse(Members.Contains(users[2], new UserEqualityComparer()), "Solo user kick failed");
+            Assert.IsFalse(Members.Contains(users[3], new UserEqualityComparer()), "Group of users kick failed");
+            Assert.IsTrue(Members.Contains(users[4], new UserEqualityComparer()), "Group of users with chat creator kicked - failed");
         }
 
         [TestMethod]
@@ -106,7 +76,6 @@ namespace Messenger.DataLayer.Sql.Tests
             var chat = chatRepository.CreateGroupChat(userIds, chatName);
 
             chatRepository.KickUser(chat.Id, users[0].Id);
-            chatRepository.KickUser(chat.Id, users[2].Id);
             chatRepository.SetCreator(chat.Id, users[1].Id);
             chatRepository.KickUsers(chat.Id, new int[] { users[0].Id, users[4].Id });
             chatRepository.KickUsers(chat.Id, new int[] { users[1].Id, users[3].Id });
@@ -114,11 +83,10 @@ namespace Messenger.DataLayer.Sql.Tests
 
             var Members = chatRepository.GetChatUsers(chat.Id);
             //asserts
-            Assert.AreEqual(false, Members.Contains(users[0], new UserEqualityComparer()));
-            Assert.AreEqual(true, Members.Contains(users[1], new UserEqualityComparer()));
-            Assert.AreEqual(false, Members.Contains(users[2], new UserEqualityComparer()));
-            Assert.AreEqual(true, Members.Contains(users[3], new UserEqualityComparer()));
-            Assert.AreEqual(false, Members.Contains(users[4], new UserEqualityComparer()));
+            Assert.AreEqual(false, Members.Contains(users[0], new UserEqualityComparer()), "Creator change failed");
+            Assert.AreEqual(true, Members.Contains(users[1], new UserEqualityComparer()), "New creator was kicked - Creator change failed");
+            Assert.AreEqual(true, Members.Contains(users[3], new UserEqualityComparer()), "Group of users with chat creator was kicked - Creator change failed");
+            Assert.AreEqual(false, Members.Contains(users[4], new UserEqualityComparer()), "Group of users with old chat creator wasn't kicked - Creator change failed");
         }
 
         [TestMethod]
@@ -145,11 +113,41 @@ namespace Messenger.DataLayer.Sql.Tests
             chat = chatRepository.GetChat(chat.Id);
 
             //asserts
-            Assert.AreEqual(true, chat.Members.Contains(users[0], new UserEqualityComparer()));
-            Assert.AreEqual(true, chat.Members.Contains(users[1], new UserEqualityComparer()));
-            Assert.AreEqual(true, chat.Members.Contains(users[2], new UserEqualityComparer()));
-            Assert.AreEqual(true, chat.Members.Contains(users[3], new UserEqualityComparer()));
-            Assert.AreEqual(true, chat.Members.Contains(users[4], new UserEqualityComparer()));
+            Assert.IsTrue(chat.Members.Contains(users[0], new UserEqualityComparer()), "Initialization addition failed");
+            Assert.IsTrue(chat.Members.Contains(users[1], new UserEqualityComparer()), "Initialization addition failed");
+            Assert.IsTrue(chat.Members.Contains(users[2], new UserEqualityComparer()), "Solo addition failed");
+            Assert.IsTrue(chat.Members.Contains(users[3], new UserEqualityComparer()), "Group addition failed");
+            Assert.IsTrue(chat.Members.Contains(users[4], new UserEqualityComparer()), "Group addition failed");
+        }
+
+        [TestMethod]
+        public void ShouldStartChatWithUser()
+        {
+            //arrange
+            var user = new User
+            {
+                Login = "testUser",
+                Password = "password"
+            };
+
+            const string chatName = "testChat";
+
+            //act
+            var usersRepository = new UsersRepository(ConnectionString);
+            var result = usersRepository.CreateUser(user);
+
+            _tempUsers.Add(result.Id);
+
+            var chatRepository = new ChatsRepository(ConnectionString, usersRepository);
+            var chat = chatRepository.CreateGroupChat(new int[] { _tempUsers[0] }, chatName);
+            var userChats = chatRepository.GetUserChats(user.Id);
+
+            //asserts
+            Assert.AreEqual(chatName, chat.Name);
+            Assert.AreEqual(user.Id, chat.Members.Single().Id);
+            Assert.AreEqual(chat.Id, userChats.Single().Id);
+            Assert.AreEqual(chat.Name, userChats.Single().Name);
+
         }
 
         [TestCleanup]
