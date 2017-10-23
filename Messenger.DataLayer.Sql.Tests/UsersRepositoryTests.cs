@@ -7,14 +7,14 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Messenger.Model;
 using Messenger.DataLayer;
 using Messenger.DataLayer.SqlServer;
-
+using System.Configuration;
 
 namespace Messenger.DataLayer.Sql.Tests
 {
     [TestClass]
     public class UsersRepositoryTests
     {
-        private const string ConnectionString = @"Data Source=MSI\MESSENGER;
+        private const string ConnectionString =  @"Data Source=MSI\MESSENGER;
                 Initial Catalog=messenger;
                 Integrated Security=True;";
 

@@ -45,7 +45,9 @@
     <Compile Include="ChatsRepository.cs" />
     <Compile Include="MessagesRepository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RepositoryBuilder.cs" />
     <Compile Include="SqlHelper.cs" />
+    <Compile Include="TokensRepository.cs" />
     <Compile Include="UsersRepository.cs" />
   </ItemGroup>
   <ItemGroup>

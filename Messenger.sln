@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Messenger.DataLayer.SqlServ
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Messenger.DataLayer", "Messenger.DataLayer\Messenger.DataLayer.csproj", "{7CDE6F14-9F87-422D-BA6B-3CDF2700F64F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Messenger.WebApi", "Messenger.WebApi\Messenger.WebApi.csproj", "{965D6DEE-94CF-470A-A6B2-00DCFA272BC3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{7CDE6F14-9F87-422D-BA6B-3CDF2700F64F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7CDE6F14-9F87-422D-BA6B-3CDF2700F64F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7CDE6F14-9F87-422D-BA6B-3CDF2700F64F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{965D6DEE-94CF-470A-A6B2-00DCFA272BC3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{965D6DEE-94CF-470A-A6B2-00DCFA272BC3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{965D6DEE-94CF-470A-A6B2-00DCFA272BC3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{965D6DEE-94CF-470A-A6B2-00DCFA272BC3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
