@@ -4,6 +4,8 @@ using System.Linq;
 using System.Web;
 using System.Web.Http;
 using System.Web.Routing;
+using Messenger.WebApi.Models;
+using System.Data.Entity;
 
 namespace Messenger.WebApi
 {
@@ -11,6 +13,7 @@ namespace Messenger.WebApi
     {
         protected void Application_Start()
         {
+            //Database.SetInitializer(new ChatDbInitializer());
             GlobalConfiguration.Configure(WebApiConfig.Register);
         }
     }

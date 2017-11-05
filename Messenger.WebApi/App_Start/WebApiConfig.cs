@@ -9,7 +9,7 @@ namespace Messenger.WebApi
     public static class WebApiConfig
     {
 
-        private static string ConnectionString = @"Data Source=DESKTOP-L5T6BNQ;
+        private static string ConnectionString = @"Data Source=MSI\MESSENGER;
                 Initial Catalog=messenger;
                 Integrated Security=True;";
 

@@ -39,7 +39,7 @@ namespace Messenger.DataLayer.Sql.Tests
             const string chatName = "testChat";
 
             var chat = chatRepository.CreateGroupChat(userIds, chatName);
-
+            _tempChats.Add(chat.Id);
             chatRepository.KickUser(chat.Id, users[0].Id);
             chatRepository.KickUser(chat.Id, users[2].Id);
             chatRepository.KickUsers(chat.Id, new int[] { users[0].Id, users[4].Id });
@@ -74,7 +74,7 @@ namespace Messenger.DataLayer.Sql.Tests
             const string chatName = "testChat";
 
             var chat = chatRepository.CreateGroupChat(userIds, chatName);
-
+            _tempChats.Add(chat.Id);
             chatRepository.KickUser(chat.Id, users[0].Id);
             chatRepository.SetCreator(chat.Id, users[1].Id);
             chatRepository.KickUsers(chat.Id, new int[] { users[0].Id, users[4].Id });
@@ -108,6 +108,7 @@ namespace Messenger.DataLayer.Sql.Tests
             const string chatName = "testChat";
 
             var chat = chatRepository.CreateGroupChat(new int[] { userIds[0], userIds[1] }, chatName);
+            _tempChats.Add(chat.Id);
             chatRepository.AddUser(chat.Id, userIds[2]);
             chatRepository.AddUsers(chat.Id, new int[] { userIds[3], userIds[4] });
             chat = chatRepository.GetChat(chat.Id);
@@ -141,7 +142,7 @@ namespace Messenger.DataLayer.Sql.Tests
             var chatRepository = new ChatsRepository(ConnectionString, usersRepository);
             var chat = chatRepository.CreateGroupChat(new int[] { _tempUsers[0] }, chatName);
             var userChats = chatRepository.GetUserChats(user.Id);
-
+            _tempChats.Add(chat.Id);
             //asserts
             Assert.AreEqual(chatName, chat.Name);
             Assert.AreEqual(user.Id, chat.Members.Single().Id);

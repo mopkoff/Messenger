@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Messenger.DataLayer", "Mess
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Messenger.WebApi", "Messenger.WebApi\Messenger.WebApi.csproj", "{965D6DEE-94CF-470A-A6B2-00DCFA272BC3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Messenger.CustomLogger", "Messenger.Logger\Messenger.CustomLogger.csproj", "{3155840C-8442-4938-9DB6-02CA6468D758}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +47,10 @@ Global
 		{965D6DEE-94CF-470A-A6B2-00DCFA272BC3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{965D6DEE-94CF-470A-A6B2-00DCFA272BC3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{965D6DEE-94CF-470A-A6B2-00DCFA272BC3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3155840C-8442-4938-9DB6-02CA6468D758}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3155840C-8442-4938-9DB6-02CA6468D758}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3155840C-8442-4938-9DB6-02CA6468D758}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3155840C-8442-4938-9DB6-02CA6468D758}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

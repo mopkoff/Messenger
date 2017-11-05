@@ -44,10 +44,20 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform, Version=1.0.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.5\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
+      <HintPath>..\packages\NLog.4.4.12\lib\net45\NLog.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Data.Entity" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Web.DynamicData" />
     <Reference Include="System.Web.Entity" />
@@ -86,9 +96,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App_Start\WebApiConfig.cs" />
+    <Compile Include="Controllers\ChatsController.cs" />
+    <Compile Include="Controllers\UsersController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Models\ChatCredentials.cs" />
+    <Compile Include="Models\UserCredentials.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -102,13 +116,28 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
-    <Folder Include="Controllers\" />
-    <Folder Include="Models\" />
+    <Folder Include="Filters\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Messenger.DataLayer.SqlServer\Messenger.DataLayer.SqlServer.csproj">
       <Project>{3b76e34a-921c-45de-ac8e-26a7be5bf7ff}</Project>
       <Name>Messenger.DataLayer.SqlServer</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Messenger.DataLayer\Messenger.DataLayer.csproj">
+      <Project>{7cde6f14-9f87-422d-ba6b-3cdf2700f64f}</Project>
+      <Name>Messenger.DataLayer</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Messenger.Logger\Messenger.CustomLogger.csproj">
+      <Project>{3155840c-8442-4938-9db6-02ca6468d758}</Project>
+      <Name>Messenger.CustomLogger</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Messenger.Model.Enums\Messenger.Model.Enums.csproj">
+      <Project>{c7f4ce79-bd1a-4e74-b70c-a683780ee760}</Project>
+      <Name>Messenger.Model.Enums</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Messenger.Model\Messenger.Model.csproj">
+      <Project>{b8a9c43f-0703-4c5e-bafa-538848da31a9}</Project>
+      <Name>Messenger.Model</Name>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup>
@@ -126,7 +155,7 @@
           <AutoAssignPort>True</AutoAssignPort>
           <DevelopmentServerPort>57533</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://localhost:57533/</IISUrl>
+          <IISUrl>http://localhost:9090/</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>
