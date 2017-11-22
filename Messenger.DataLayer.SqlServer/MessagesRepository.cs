@@ -32,17 +32,18 @@ namespace Messenger.DataLayer.SqlServer
                         connection.Open();
 
                         // Insert the message
-                        var message = new Message(chatId, senderId, text);
+                        var message = new Message(chatId, senderId, text, DateTime.Now);
                         using (var command = connection.CreateCommand())
                         {
                             command.CommandText = "DECLARE @T TABLE (ID INT, MessageDate DATETIME)\n" +
-                                                  "INSERT INTO [Messages] ([ChatID], [SenderID], [MessageText]) " +
-                                                  "OUTPUT INSERTED.[ID], INSERTED.[Date] INTO @T " +
-                                                  "VALUES (@chatId, @senderId, @messageText)\n" +
-                                                  "SELECT [ID], [Date] FROM @T";
+                                                  "INSERT INTO [Messages] ([ChatID], [SenderID], [MessageText], [MessageDate]) " +
+                                                  "OUTPUT INSERTED.[ID], INSERTED.[MessageDate] INTO @T " +
+                                                  "VALUES (@chatId, @senderId, @messageText, @messageDate)\n" +
+                                                  "SELECT [ID], [MessageDate] FROM @T";
 
                             command.Parameters.AddWithValue("@chatId", chatId);
                             command.Parameters.AddWithValue("@senderId", senderId);
+                            command.Parameters.AddWithValue("@messageDate", message.Date);
                             if (text == null)
                                 command.Parameters.AddWithValue("@messageText", DBNull.Value);
                             else
@@ -52,7 +53,7 @@ namespace Messenger.DataLayer.SqlServer
                             {
                                 reader.Read();
                                 message.Id = reader.GetInt32(reader.GetOrdinal("ID"));
-                                message.Date = reader.GetDateTime(reader.GetOrdinal("Date"));
+                                message.Date = reader.GetDateTime(reader.GetOrdinal("MessageDate"));
                             }
                         }
 
@@ -133,7 +134,7 @@ namespace Messenger.DataLayer.SqlServer
                 connection.Open();
                 using (var command = connection.CreateCommand())
                 {
-                    command.CommandText = "SELECT [ChatID], [SenderID], [Text], [Date] FROM [Messages] " +
+                    command.CommandText = "SELECT [ChatID], [SenderID], [MessageText], [MessageDate] FROM [Messages] " +
                                           "WHERE [ID] = @messageId";
 
                     command.Parameters.AddWithValue("@messageId", messageId);
@@ -148,8 +149,8 @@ namespace Messenger.DataLayer.SqlServer
                             Id = messageId,
                             ChatId = reader.GetInt32(reader.GetOrdinal("ChatID")),
                             SenderId = reader.GetInt32(reader.GetOrdinal("SenderID")),
-                            Text = reader.IsDBNull(reader.GetOrdinal("Text")) ? null : reader.GetString(reader.GetOrdinal("Text")),
-                            Date = reader.GetDateTime(reader.GetOrdinal("Date")),
+                            Text = reader.IsDBNull(reader.GetOrdinal("MessageText")) ? null : reader.GetString(reader.GetOrdinal("MessageText")),
+                            Date = reader.GetDateTime(reader.GetOrdinal("MessageDate")),
                         };
                     }
                 }
@@ -191,7 +192,32 @@ namespace Messenger.DataLayer.SqlServer
         {
             return GetChatMessagesInRange(chatId, DateTime.MinValue, DateTime.MaxValue);
         }
+        public Message GetLastMessage(int chatId)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                connection.Open();
 
+                using (var command = connection.CreateCommand())
+                {
+                    command.CommandText = "SELECT TOP 1 [ID], [SenderID], [MessageText], [MessageDate] FROM [Messages] " +
+                                          "WHERE [ChatID] = @chatId ORDER BY [ID] DESC";
+                    command.Parameters.AddWithValue("@chatId", chatId);
+
+                    using (var reader = command.ExecuteReader())
+                    {
+                        return new Message
+                        {
+                            Id = reader.GetInt64(reader.GetOrdinal("ID")),
+                            ChatId = chatId,
+                            Text = reader.IsDBNull(reader.GetOrdinal("MessageText")) ? null : reader.GetString(reader.GetOrdinal("MessageText")),
+                            SenderId = reader.GetInt32(reader.GetOrdinal("SenderID")),
+                            Date = reader.GetDateTime(reader.GetOrdinal("MessageDate")),
+                        };
+                    }
+                }
+            }
+        }
         public IEnumerable<Message> GetChatMessagesFrom(int chatId, DateTime dateFrom)
         {
             return GetChatMessagesInRange(chatId, dateFrom, DateTime.MaxValue);
@@ -202,6 +228,39 @@ namespace Messenger.DataLayer.SqlServer
             return GetChatMessagesInRange(chatId, DateTime.MinValue, dateTo);
         }
 
+        public IEnumerable<Message> GetChatMessagesFromId(int chatId, long idFrom)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                connection.Open();
+
+                using (var command = connection.CreateCommand())
+                {
+                    command.CommandText = "SELECT [ID], [SenderID], [MessageText], [MessageDate] FROM [Messages] " +
+                                          "WHERE [ChatID] = @chatId";
+                    command.Parameters.AddWithValue("@chatId", chatId);
+
+                    command.CommandText += " AND [ID] > @idFrom";
+                    command.Parameters.AddWithValue("@idFrom", idFrom);
+
+                    using (var reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            yield return new Message
+                            {
+                                Id = reader.GetInt64(reader.GetOrdinal("ID")),
+                                ChatId = chatId,
+                                Text = reader.IsDBNull(reader.GetOrdinal("MessageText")) ? null : reader.GetString(reader.GetOrdinal("MessageText")),
+                                SenderId = reader.GetInt32(reader.GetOrdinal("SenderID")),
+                                Date = reader.GetDateTime(reader.GetOrdinal("MessageDate")),
+                            };
+                        }
+                    }
+                }
+            }
+        }
+
         public IEnumerable<Message> GetChatMessagesInRange(int chatId, DateTime dateFrom, DateTime dateTo)
         {
             using (var connection = new SqlConnection(_connectionString))
@@ -210,18 +269,18 @@ namespace Messenger.DataLayer.SqlServer
 
                 using (var command = connection.CreateCommand())
                 {
-                    command.CommandText = "SELECT [ID], [SenderID], [Text], [Date] FROM [Messages] " +
+                    command.CommandText = "SELECT [ID], [SenderID], [MessageText], [MessageDate] FROM [Messages] " +
                                           "WHERE [ChatID] = @chatId";
                     command.Parameters.AddWithValue("@chatId", chatId);
 
                     if (dateFrom != DateTime.MinValue)
                     {
-                        command.CommandText += " AND [Date] >= @dateFrom";
+                        command.CommandText += " AND [MessageDate] >= @dateFrom";
                         command.Parameters.AddWithValue("@dateFrom", dateFrom);
                     }
                     if (dateTo != DateTime.MaxValue)
                     {
-                        command.CommandText += " AND [Date] <= @dateTo";
+                        command.CommandText += " AND [MessageDate] <= @dateTo";
                         command.Parameters.AddWithValue("@dateTo", dateTo);
                     }
 
@@ -231,11 +290,11 @@ namespace Messenger.DataLayer.SqlServer
                         {
                             yield return new Message
                             {
-                                Id = reader.GetInt32(reader.GetOrdinal("ID")),
+                                Id = reader.GetInt64(reader.GetOrdinal("ID")),
                                 ChatId = chatId,
-                                Text = reader.IsDBNull(reader.GetOrdinal("Text")) ? null : reader.GetString(reader.GetOrdinal("Text")),
+                                Text = reader.IsDBNull(reader.GetOrdinal("MessageText")) ? null : reader.GetString(reader.GetOrdinal("MessageText")),
                                 SenderId = reader.GetInt32(reader.GetOrdinal("SenderID")),
-                                Date = reader.GetDateTime(reader.GetOrdinal("Date")),
+                                Date = reader.GetDateTime(reader.GetOrdinal("MessageDate")),
                             };
                         }
                     }

@@ -8,10 +8,10 @@ namespace Messenger.Model
 {
     public class Message
     {
-        public int Id { get; set; }
+        public long Id { get; set; }
+        public int ChatId { get; set; }
         public int SenderId { get; set; }
         public string Text { get; set; }
-        public int ChatId { get; set; }
         public DateTime Date { get; set; }
         public DateTime DestroyDate { get; set; }
         public IEnumerable<Attachment> Attachments { get; set; }
@@ -20,19 +20,28 @@ namespace Messenger.Model
         {
             Attachments = null;
         }
-        public Message(int id, int senderId, string text)
+        public Message(int chatId, int senderId, string text)
         {
-            this.Id = id;
+            this.ChatId = chatId;
             this.SenderId = senderId;
             this.Text = text;
         }
-        public Message(int id, int senderId, string text, int chatId, DateTime date)
+        public Message(int chatId, int senderId, string text, DateTime date)
         {
-            this.Id = id;
+            this.ChatId = chatId;
             this.SenderId = senderId;
             this.Text = text;
-            this.ChatId = chatId;
             this.Date = date;
         }
     }
 }
+
+
+
+
+
+
+
+
+
+

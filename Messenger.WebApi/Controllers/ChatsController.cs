@@ -11,6 +11,7 @@ using Messenger.Model.Enums;
 //using Messenger.WebApi.Filters.Authentication;
 //using Messenger.WebApi.Filters.Authorization;
 using Messenger.WebApi.Models;
+using Newtonsoft.Json.Linq;
 //using Messenger.WebApi.Principals;
 namespace Messenger.WebApi.Controllers
 {
@@ -19,34 +20,37 @@ namespace Messenger.WebApi.Controllers
    // [Authorize]
     public class ChatsController : ApiController
     {
-        private const string RegexString = @".*\/chats\/([^\/]+)\/?";
-
         /// <summary>
         /// Gets chat information by its id. User must be in chat
         /// </summary>
         /// <param name="id">The id of the chat</param>
         /// <returns>All chat information</returns>
-        [Route("{id:int}")]
+        [Route("{token:Guid}")]
         [HttpGet]
-       // [ChatUserAuthorization(RegexString = RegexString)]
-        public Chat GetChatById(int id)
+        public ChatCredentials[] GetChatByToken(Guid token)
         {
-            var chat = RepositoryBuilder.ChatsRepository.GetChat(id);
-            if (chat == null)
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, "No chat found"));
-            return chat;
+            var userId = RepositoryBuilder.TokensRepository.GetUserIdByToken(token);
+            var chats = RepositoryBuilder.ChatsRepository.GetUserChats(userId).ToArray();
+            List<ChatCredentials> chatsArray = new List<ChatCredentials>();
+            
+            if (chats.Length == 0)
+                return null;
+                        
+            foreach (var chat in chats)
+            {
+                chat.Members = RepositoryBuilder.ChatsRepository.GetChatUsers(chat.Id).ToArray();
+                chatsArray.Add(new ChatCredentials(chat, RepositoryBuilder.MessagesRepository.GetLastMessage(chat.Id)));
+            }
+            return chatsArray.ToArray();
         }
 
         //[Route("")]
-        [HttpPost]
+        [HttpPut]
         // [ChatUserAuthorization(RegexString = RegexString)]
         public Chat CreateChat([FromBody] ChatCredentials chatCredentials)
         {            
-            var chat = RepositoryBuilder.ChatsRepository.CreateGroupChat(chatCredentials.Members, chatCredentials.Title);
-            if (chat == null)
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, "No chat found"));
+            var chat = RepositoryBuilder.ChatsRepository.CreateGroupChat(RepositoryBuilder.UsersRepository.GetUserIdsByLogins(chatCredentials.Members.Select(m=>m.Login)), chatCredentials.Name);      
             return chat;
         }
-
     }
 }

@@ -4,6 +4,10 @@ using System.Data.SqlClient;
 using Messenger.Model;
 using System.Drawing;
 using Messenger.Model.Enums;
+using System.Transactions;
+using System.Threading.Tasks;
+using System.Text;
+using System.Collections.Generic;
 
 namespace Messenger.DataLayer.SqlServer
 {
@@ -150,6 +154,63 @@ namespace Messenger.DataLayer.SqlServer
             }
         }
 
+        /// <inheritdoc />
+        /// <summary>
+        /// Async version of <see cref="M:DotNetMessenger.DataLayer.SqlServer.UsersRepository.GetUserByUsername(System.String)" />
+        /// </summary>
+        /// <seealso cref="M:DotNetMessenger.DataLayer.SqlServer.UsersRepository.GetUserByUsername(System.String)" />
+        public async Task<User> GetUserByLoginAsync(string login)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                connection.Open();
+
+                if (!SqlHelper.DoesFieldValueExist(connection, "Users", "login", login, SqlDbType.VarChar))
+                    throw new Exception("User not exist");
+                using (var command = connection.CreateCommand())
+                {
+                    command.CommandText = "SELECT [ID], [Login], [Password] FROM [Users] WHERE [Login] = @login";
+                    command.Parameters.AddWithValue("@Login", login);
+
+                    var user = new User();
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+                        if (!reader.HasRows)
+                            throw new ArgumentException();
+                        await reader.ReadAsync();
+                        user.Id = reader.GetInt32(reader.GetOrdinal("ID"));
+                        user.Login = login;
+                    }
+                    return user.Id == 0 ? null : user;
+                    
+                }
+            }     
+        }
+
+        public string GetPassword(int userId)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                connection.Open();
+
+                if (!SqlHelper.DoesFieldValueExist(connection, "Users", "ID", userId, SqlDbType.Int))
+                    throw new Exception("User not exist");
+                using (var command = connection.CreateCommand())
+                {
+                    command.CommandText = "SELECT [Password] FROM [Users] WHERE [ID] = @userId";
+                    command.Parameters.AddWithValue("@userId", userId);
+
+                    string password;
+                    using (var reader = command.ExecuteReader())
+                    {
+                        reader.Read();
+                        password = reader.GetString(reader.GetOrdinal("Password"));
+                    }
+                    return password;
+                }
+            }
+        }
+
         public User GetUser(int userId)
         {
             using (var connection = new SqlConnection(_connectionString))
@@ -176,6 +237,105 @@ namespace Messenger.DataLayer.SqlServer
             }
         }
 
+        public User GetUserByLogin(string login)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                connection.Open();
+
+                if (!SqlHelper.DoesFieldValueExist(connection, "Users", "login", login, SqlDbType.VarChar))
+                    throw new Exception("User not exist");
+                using (var command = connection.CreateCommand())
+                {
+                    command.CommandText = "SELECT [ID], [Login], [Password] FROM [Users] WHERE [Login] = @login";
+                    command.Parameters.AddWithValue("@Login", login);
+
+                    var user = new User();
+                    using (var reader = command.ExecuteReader())
+                    {
+                        reader.Read();
+                        user.Id = reader.GetInt32(reader.GetOrdinal("ID"));
+                        user.Login = reader.GetString(reader.GetOrdinal("Login"));
+                        user.Password = reader.GetString(reader.GetOrdinal("Password"));
+                    }
+                    return user;
+                }
+            }
+        }
+
+        public IEnumerable<int> GetUserIdsByLogins(IEnumerable<string> users)
+        {
+                using (var connection = new SqlConnection(_connectionString))
+                {
+                    connection.Open();
+                using (var command = connection.CreateCommand())
+                {
+                    StringBuilder stringBuilder = new StringBuilder();
+
+                    string usersQueue = ListToString(users);
+
+                    stringBuilder.Append("SELECT [ID] FROM [Users] WHERE [Login] IN (");
+                    int i = 1;
+                    foreach (var item in users)
+                    {
+                        command.Parameters.AddWithValue("@user" + i, item);
+                        stringBuilder.Append("@user" + i + ", ");
+                        ++i;
+                    }
+                    stringBuilder.Remove(stringBuilder.Length - 2, 2);
+                    stringBuilder.Append(");");
+                    command.CommandText = stringBuilder.ToString();
+                    using (var reader = command.ExecuteReader())
+                    {
+                        if (!reader.HasRows)
+                            yield break;
+                        while (reader.Read())
+                        {
+                            yield return reader.GetInt32(reader.GetOrdinal("ID"));
+                        }
+                    }
+                }
+                }
+            }
+        public IEnumerable<User> GetUsersByPattern(string pattern)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                connection.Open();
+
+                using (var command = connection.CreateCommand())
+                {
+                    //command.CommandText = "SELECT [ID] FROM [Users] WHERE [Login] LIKE " + "'%" +pattern + "%'";
+                    pattern += '%';
+                    pattern = '%' + pattern;
+                    command.CommandText = "SELECT [ID] FROM [Users] WHERE [Login] LIKE @pattern";
+                    command.Parameters.AddWithValue("@pattern", pattern);
+                    using (var reader = command.ExecuteReader())
+                    {
+                        if (!reader.HasRows)
+                            yield break;
+                        while (reader.Read())
+                        {
+                            yield return this.GetUser(reader.GetInt32(reader.GetOrdinal("ID")));
+                        }
+                    }
+                }
+            }
+        }
+
+        private string ListToString(IEnumerable<string> list)
+        {
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.Append('(');            
+            foreach (var item in list)
+            {
+                stringBuilder.Append(item);
+                stringBuilder.Append(", ");
+            }
+            stringBuilder.Remove(stringBuilder.Length - 2, 2);
+            stringBuilder.Append(')');
+            return stringBuilder.ToString();
+        }
         public User PersistUser(User user)
         {
             if (user == null)

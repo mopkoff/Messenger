@@ -28,12 +28,28 @@ namespace Messenger.WebApi.Controllers
         public User GetUserById(int id)
         {
             using (var timeLog =
-                 new CustomLogger(LogLevel.Debug, "Fetching chat with id: {0}", id))
+                 new CustomLogger(LogLevel.Debug, "Fetching user with id: {0}", id))
             {
                 timeLog.Start();
                 var user = RepositoryBuilder.UsersRepository.GetUser(id);
-                NLogger.Logger.Info("Fetched chat with id {0}", id);
+                NLogger.Logger.Info("Fetched user with id {0}", id);
+                user.Password = "";
                 return user;
+            }
+        }
+
+        [Route("find/{pattern}")]
+        [HttpGet]
+        // [ChatUserAuthorization(RegexString = RegexString)]
+        public User[] GetUsersByPatter(string pattern)
+        {
+            using (var timeLog =
+                 new CustomLogger(LogLevel.Debug, "Find user with pattern: {0}", pattern))
+            {
+                timeLog.Start();
+                var users = RepositoryBuilder.UsersRepository.GetUsersByPattern(pattern).ToArray();
+                //NLogger.Logger.Info("Fetched chat with id {0}", id);
+                return users;
             }
         }
 
@@ -42,7 +58,7 @@ namespace Messenger.WebApi.Controllers
         // [ChatUserAuthorization(RegexString = RegexString)]
         public User CreateUser([FromBody] UserCredentials userCredentials)
         {
-            var user = RepositoryBuilder.UsersRepository.CreateUser(new User(userCredentials.Username, userCredentials.Password));
+            var user = RepositoryBuilder.UsersRepository.CreateUser(new User(userCredentials.Login, userCredentials.Password));
             if (user == null)
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, "No user found"));
             return user;

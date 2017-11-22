@@ -102,9 +102,10 @@ namespace Messenger.DataLayer.SqlServer
                     {
                         command.ExecuteNonQuery();
                     }
-                    catch (SqlException)
+                    catch (SqlException e)
                     {
                         // means user does not exist
+                        Console.WriteLine(e.Message);
                         throw new ArgumentException();
                     }
                     return token;

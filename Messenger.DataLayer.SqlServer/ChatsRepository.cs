@@ -195,7 +195,7 @@ namespace Messenger.DataLayer.SqlServer
         {
             return CreateChat(members, title, ChatTypes.GroupChat);
         }
-
+               
         public Chat CreateDialog(int member1, int member2)
         {
             UsersRepository u = new UsersRepository(_connectionString);
@@ -224,7 +224,7 @@ namespace Messenger.DataLayer.SqlServer
             }
 
         }
-
+        
         public IEnumerable<Chat> GetUserChats(int userId)
         {
             if (userId == 0)
@@ -234,6 +234,7 @@ namespace Messenger.DataLayer.SqlServer
                 connection.Open();
 
                 // get chat ids
+                
                 using (var command = connection.CreateCommand())
                 {
                     command.CommandText =
